@@ -1,0 +1,12 @@
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\bin\Debug\net6.0\Eduzest.HRMS.Service.deps.json
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\bin\Debug\net6.0\Eduzest.HRMS.Service.dll
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\bin\Debug\net6.0\Eduzest.HRMS.Service.pdb
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\Eduzest.HRMS.Service.csproj.AssemblyReference.cache
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\Eduzest.HRMS.Service.GeneratedMSBuildEditorConfig.editorconfig
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\Eduzest.HRMS.Service.AssemblyInfoInputs.cache
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\Eduzest.HRMS.Service.AssemblyInfo.cs
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\Eduzest.HRMS.Service.csproj.CoreCompileInputs.cache
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\Eduzest.HRMS.Service.dll
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\refint\Eduzest.HRMS.Service.dll
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\Eduzest.HRMS.Service.pdb
+C:\projects\HRMS_Eduzest\Eduzest.HRMS.WebApi\Eduzest.HRMS.Service\obj\Debug\net6.0\ref\Eduzest.HRMS.Service.dll

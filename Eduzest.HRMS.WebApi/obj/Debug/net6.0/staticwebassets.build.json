@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "TiIWX2WQJeDKVyI1eBX+v4bXgD+F/IIWMa2Egy6d8K0=",
+  "Source": "Eduzest.HRMS.WebApi",
+  "BasePath": "_content/Eduzest.HRMS.WebApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
