@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Eduzest.HRMS.Entities.Entities.Employee;
 using Eduzest.HRMS.Entities.Entities.Hrms;
-
+using Eduzest.HRMS.Entities.Entities.Log;
 
 namespace Eduzest.HRMS.DataAccess
 {
@@ -25,6 +25,7 @@ namespace Eduzest.HRMS.DataAccess
         public DbSet<RelievingDetails> RelievingDetails { get; set;}
         public DbSet<SalaryAssignment> SalaryAssignments { get; set;}
         public DbSet<SalaryTemplate> SalaryTemplates { get; set;}
+        public  DbSet<LogDetails> LogDetails { get; set; }  
 
 
     }

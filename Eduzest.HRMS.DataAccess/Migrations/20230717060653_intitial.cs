@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Eduzest.HRMS.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class intitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,6 +31,22 @@ namespace Eduzest.HRMS.DataAccess.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Branches", x => x.BranchId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LogDetails",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    message = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    stacktrace = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    targetsite = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    date = table.Column<DateTime>(type: "datetime2", maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LogDetails", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -350,6 +366,9 @@ namespace Eduzest.HRMS.DataAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "ExperienceDetails");
+
+            migrationBuilder.DropTable(
+                name: "LogDetails");
 
             migrationBuilder.DropTable(
                 name: "RelievingDetails");

@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "TiIWX2WQJeDKVyI1eBX+v4bXgD+F/IIWMa2Egy6d8K0=",
+  "Hash": "Zyh2KqKMV2YFaS6TVxs1GrCn6dFPqOQrwNoR/7MFeN4=",
   "Source": "Eduzest.HRMS.WebApi",
   "BasePath": "_content/Eduzest.HRMS.WebApi",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Eduzest.HRMS.WebApi\\wwwroot",
+      "Source": "Eduzest.HRMS.WebApi",
+      "ContentRoot": "C:\\projects\\HRMS_Eduzest\\Eduzest.HRMS.WebApi\\Eduzest.HRMS.WebApi\\wwwroot\\",
+      "BasePath": "_content/Eduzest.HRMS.WebApi",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }

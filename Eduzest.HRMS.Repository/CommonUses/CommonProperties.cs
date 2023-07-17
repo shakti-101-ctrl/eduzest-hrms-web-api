@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Eduzest.HRMS.Repository
+namespace Eduzest.HRMS.Repository.CommonUses
 {
     public class CommonProperties
     {

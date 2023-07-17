@@ -681,6 +681,39 @@ namespace Eduzest.HRMS.DataAccess.Migrations
                     b.ToTable("SalaryTemplates");
                 });
 
+            modelBuilder.Entity("Eduzest.HRMS.Entities.Entities.Log.LogDetails", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Date")
+                        .HasMaxLength(200)
+                        .HasColumnType("datetime2")
+                        .HasColumnName("date");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("message");
+
+                    b.Property<string>("StackTrace")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("stacktrace");
+
+                    b.Property<string>("TargetSite")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("targetsite");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LogDetails");
+                });
+
             modelBuilder.Entity("Eduzest.HRMS.Entities.Entities.Employee.Department", b =>
                 {
                     b.HasOne("Eduzest.HRMS.Entities.Entities.Employee.Branch", "Branch")

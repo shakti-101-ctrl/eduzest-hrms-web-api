@@ -8,30 +8,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace Eduzest.HRMS.Repository.Service
 {
     public class UnitOfWorks : IUnitOfWork
     {
-        private readonly DataContext _context;
-        private readonly IMapper _mapper;
-        //private readonly IGenericRepository<BranchDto> _branch;
-        public UnitOfWorks(DataContext context,IMapper _mapper)
+        private readonly DataContext context;
+        private readonly IMapper mapper;
+        private readonly ILogger<BranchRepository> logger;
+        public UnitOfWorks(DataContext _context,IMapper _mapper, ILogger<BranchRepository> _logger)
         {
-            this._context = context;
-            this._mapper = _mapper;
-            Branches = new BranchRepository(_context,_mapper);
+            this.context = _context;
+            this.mapper = _mapper;
+            logger = _logger;
+            
+            Branches = new BranchRepository(_context,_mapper,_logger);
            
         }
         public IBranchRepository Branches { get; private set; }
         
         public int Complete()
         {
-            return _context.SaveChanges();
+            return context.SaveChanges();
         }
         public void Dispose()
         {
-            _context.Dispose();
+            context.Dispose();
         }
     }
 }

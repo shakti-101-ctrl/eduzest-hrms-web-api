@@ -16,6 +16,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.9" />
+    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
         
   </ItemGroup>
@@ -23,6 +24,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Eduzest.HRMS.DataAccess\Eduzest.HRMS.DataAccess.csproj" />
     <ProjectReference Include="..\Eduzest.HRMS.Repository\Eduzest.HRMS.Repository.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="logs\" />
+    <Folder Include="wwwroot\Uploads\" />
   </ItemGroup>
 
 </Project>

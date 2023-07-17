@@ -3,26 +3,29 @@ using Eduzest.HRMS.DataAccess;
 using Eduzest.HRMS.Entities.Entities.Employee;
 using Eduzest.HRMS.Repository.DTO.Employee;
 using Eduzest.HRMS.Repository.Interface;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace Eduzest.HRMS.Repository.Service
 {
-    public class BranchRepository : IBranchRepository
+    public class BranchRepository :IBranchRepository
     {
         private readonly DataContext _dataContext;
         private readonly IMapper _mapper;
-        //private readonly IGenericRepository<BranchDto> _branch;
-        public BranchRepository(DataContext context,IMapper _mapper) 
+        private readonly ILogger<BranchRepository> _logger;
+        public BranchRepository(DataContext context,IMapper _mapper, ILogger<BranchRepository> logger)
         {
             this._dataContext = context;
             this._mapper = _mapper;
            
-            
+            this._logger = logger;
         }
 
         public async Task<ServiceResponse<BranchDto>> AddBranch(BranchDto branch)
@@ -36,13 +39,14 @@ namespace Eduzest.HRMS.Repository.Service
                     branch.BranchId = Guid.NewGuid();
                     branch.CreatedOn = DateTime.Now;
                     await _dataContext.Branches.AddAsync(_mapper.Map<Branch>(branch));
-                    int x = await _dataContext.SaveChangesAsync();
+                    await _dataContext.SaveChangesAsync();
                     var data = _mapper.Map<BranchDto>(_dataContext.Branches.OrderByDescending(x=>x.CreatedOn).LastOrDefault());
+                   
                     serviceResponse.Data = branch;
                     serviceResponse.Success = true;
                     serviceResponse.Response = (int)ResponseType.Ok;
                     serviceResponse.Message = MessaageType.Saved;
-
+      
                 }
             }
             catch (Exception ex)
@@ -50,6 +54,7 @@ namespace Eduzest.HRMS.Repository.Service
                 serviceResponse.Message = MessaageType.FailureOnSave;
                 serviceResponse.Success = true;
                 serviceResponse.Response = (int)ResponseType.NoConnect;
+               
             }
             return serviceResponse;
         }
@@ -85,27 +90,40 @@ namespace Eduzest.HRMS.Repository.Service
                 serviceResponse.Message = MessaageType.FailureOnException;
                 serviceResponse.Success = false;
                 serviceResponse.Response = (int)ResponseType.InternalServerError;
+               
             }
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<List<BranchDto>>> GetAllBranches()
         {
+            _logger.LogInformation("Banda......");
             ServiceResponse<List<BranchDto>> serviceResponse = new ServiceResponse<List<BranchDto>>();
             var branches = await _dataContext.Branches.Where(x => x.IsActive == true).ToListAsync();
-            if (branches.Count > 0)
+            try
             {
-                serviceResponse.Data = _mapper.Map<List<BranchDto>>(branches);
-                serviceResponse.Message = MessaageType.RecordFound;
-                serviceResponse.Response = (int)ResponseType.Ok;
-                serviceResponse.Success = true;
+                if (branches.Count > 0)
+                {
+                    serviceResponse.Data = _mapper.Map<List<BranchDto>>(branches);
+                    serviceResponse.Message = MessaageType.RecordFound;
+                    serviceResponse.Response = (int)ResponseType.Ok;
+                    serviceResponse.Success = true;
+                }
+                else
+                {
+                    serviceResponse.Message = MessaageType.NoRecordFound;
+                    serviceResponse.Response = (int)ResponseType.NoConnect;
+                    serviceResponse.Success = false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                serviceResponse.Message = MessaageType.NoRecordFound;
-                serviceResponse.Response = (int)ResponseType.NoConnect;
+                serviceResponse.Message = MessaageType.FailureOnException;
                 serviceResponse.Success = false;
+                serviceResponse.Response = (int)ResponseType.InternalServerError;
+                
             }
+            
             return serviceResponse;
         }
 
@@ -166,6 +184,7 @@ namespace Eduzest.HRMS.Repository.Service
                 serviceResponse.Message = MessaageType.FailureOnException;
                 serviceResponse.Success = false;
                 serviceResponse.Response = (int)ResponseType.InternalServerError;
+               
             }
             return serviceResponse;
         }
