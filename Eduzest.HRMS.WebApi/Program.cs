@@ -8,6 +8,8 @@ using Eduzest.HRMS.WebApi.Services;
 using Microsoft.Extensions.FileProviders;
 using Eduzest.HRMS.WebApi.Extensions;
 using Serilog;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -25,6 +27,9 @@ var _logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration).Enrich.FromLogContext()
     .CreateLogger();
 builder.Logging.AddSerilog(_logger);
+
+builder.Services.Configure<ApiBehaviorOptions>(options
+    => options.SuppressModelStateInvalidFilter = true);
 //end of serilog
 var app = builder.Build();
 

@@ -13,12 +13,25 @@ namespace Eduzest.HRMS.Repository.DTO.Employee
     public class BranchDto : CommonProperties
     {
         public Guid? BranchId { get; set; }
-        [Required]
+        
+        [Required(ErrorMessage ="Branch name is required")]
         public string? BranchName { get; set; }
+        
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid Email Address.")]
+        [RegularExpression("^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$")]
         public string? Email { get; set; }
+
+        [Required(ErrorMessage ="Mobile number is required")]
         public string? MobileNumber { get; set; }
+
+        [Required(ErrorMessage = "City is required")]
         public string? City { get; set; }
+
+        [Required(ErrorMessage ="State is required")]
         public string? State { get; set; }
+
+        [Required(ErrorMessage = "Address is required")]
         public string? Address { get; set; }
     }
 }

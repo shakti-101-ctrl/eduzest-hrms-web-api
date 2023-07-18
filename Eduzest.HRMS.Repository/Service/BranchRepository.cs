@@ -12,6 +12,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Serilog;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
+using System.Diagnostics;
+using Serilog.Core;
 
 namespace Eduzest.HRMS.Repository.Service
 {
@@ -23,19 +27,21 @@ namespace Eduzest.HRMS.Repository.Service
         public BranchRepository(DataContext context,IMapper _mapper, ILogger<BranchRepository> logger)
         {
             this._dataContext = context;
-            this._mapper = _mapper;
-           
+            this._mapper = _mapper;    
             this._logger = logger;
         }
 
         public async Task<ServiceResponse<BranchDto>> AddBranch(BranchDto branch)
         {
+            
+            _logger.LogInformation("***** BranchRepository -->AddBranch() started *****\n");
             ServiceResponse<BranchDto> serviceResponse = new ServiceResponse<BranchDto>();
-
+            
             try
             {
                 if(_dataContext !=null)
                 {
+                    _logger.LogInformation("branch -- >initialization started\n");
                     branch.BranchId = Guid.NewGuid();
                     branch.CreatedOn = DateTime.Now;
                     await _dataContext.Branches.AddAsync(_mapper.Map<Branch>(branch));
@@ -46,21 +52,25 @@ namespace Eduzest.HRMS.Repository.Service
                     serviceResponse.Success = true;
                     serviceResponse.Response = (int)ResponseType.Ok;
                     serviceResponse.Message = MessaageType.Saved;
-      
+                    _logger.LogInformation("branch -- > record added successfully\n");
                 }
             }
             catch (Exception ex)
             {
+               
                 serviceResponse.Message = MessaageType.FailureOnSave;
                 serviceResponse.Success = true;
                 serviceResponse.Response = (int)ResponseType.NoConnect;
-               
+               _logger.LogError(string.Format("[Message  : {0}] \n [Stack Trace : {1}] \n [Target Site : {2}]", ex.Message, ex.StackTrace, ex.TargetSite));
+
             }
+            _logger.LogInformation("***** BranchRepository -- > AddBranch() completed *****\n");
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<BranchDto>> DeleteBranch(Guid branchid)
         {
+            _logger.LogInformation("***** BranchRepository -- >DeleteBranch() started *****\n");
             ServiceResponse<BranchDto> serviceResponse = new ServiceResponse<BranchDto>();
 
             var branch = await _dataContext.Branches.FindAsync(branchid);
@@ -68,6 +78,7 @@ namespace Eduzest.HRMS.Repository.Service
             {
                 if (branch != null)
                 {
+                    _logger.LogInformation("branch -- >initialization started\n");
                     branch.IsActive = false;
                     branch.UpdatedOn = DateTime.Now;
                     _dataContext.Add(branch).State = EntityState.Modified;
@@ -77,9 +88,11 @@ namespace Eduzest.HRMS.Repository.Service
                     serviceResponse.Message = MessaageType.Deleted;
                     serviceResponse.Success = true;
                     serviceResponse.Response = (int)ResponseType.Ok;
+                    _logger.LogInformation("branch -- >deleted successfully\n");
                 }
                 else
                 {
+                    _logger.LogInformation("invalid branchid\n");
                     serviceResponse.Message = MessaageType.DeletionFailed;
                     serviceResponse.Success = false;
                     serviceResponse.Response = (int)ResponseType.NoConnect;
@@ -90,20 +103,24 @@ namespace Eduzest.HRMS.Repository.Service
                 serviceResponse.Message = MessaageType.FailureOnException;
                 serviceResponse.Success = false;
                 serviceResponse.Response = (int)ResponseType.InternalServerError;
-               
+                _logger.LogError(string.Format("[Message  : {0}] \n [Stack Trace : {1}] \n [Target Site : {2}]", ex.Message, ex.StackTrace, ex.TargetSite));
+
             }
+            _logger.LogInformation("***** BranchRepository -- > DeleteBranch() completed *****\n");
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<List<BranchDto>>> GetAllBranches()
         {
-            _logger.LogInformation("Banda......");
+            _logger.LogInformation("***** BranchRepository-- >GetAllBranches() started *****\n");
+            
             ServiceResponse<List<BranchDto>> serviceResponse = new ServiceResponse<List<BranchDto>>();
             var branches = await _dataContext.Branches.Where(x => x.IsActive == true).ToListAsync();
             try
             {
                 if (branches.Count > 0)
                 {
+                    _logger.LogInformation("branches -- >data found\n");
                     serviceResponse.Data = _mapper.Map<List<BranchDto>>(branches);
                     serviceResponse.Message = MessaageType.RecordFound;
                     serviceResponse.Response = (int)ResponseType.Ok;
@@ -111,6 +128,45 @@ namespace Eduzest.HRMS.Repository.Service
                 }
                 else
                 {
+                    _logger.LogInformation("branches -- >no records\n");
+                    serviceResponse.Message = MessaageType.NoRecordFound;
+                    serviceResponse.Response = (int)ResponseType.NoConnect;
+                    serviceResponse.Success = false;
+                }
+            }
+            catch (Exception ex)
+            {
+               
+                serviceResponse.Message = MessaageType.FailureOnException;
+                serviceResponse.Success = false;
+                serviceResponse.Response = (int)ResponseType.InternalServerError;
+                _logger.LogError(string.Format("[Message  : {0}] \n [Stack Trace : {1}] \n [Target Site : {2}]", ex.Message, ex.StackTrace, ex.TargetSite));
+
+            }
+            _logger.LogInformation("***** BranchRepository -- > GetAllBranches() completed*****\n");
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<BranchDto>> GetBranchById(Guid branchid)
+        {
+            _logger.LogInformation("***** BranchRepository -- > GetBranchById() started *****\n");
+            ServiceResponse<BranchDto> serviceResponse = new ServiceResponse<BranchDto>();
+            try
+            {
+                
+                var branch = await _dataContext.Branches.Where(x => x.BranchId == branchid && x.IsActive == true).FirstOrDefaultAsync();
+                if (branch != null)
+                {
+                    _logger.LogInformation("branch -- > Branch found\n");
+                    serviceResponse.Data = _mapper.Map<BranchDto>(branch);
+                    serviceResponse.Message = MessaageType.RecordFound;
+                    serviceResponse.Response = (int)ResponseType.Ok;
+                    serviceResponse.Success = true;
+
+                }
+                else
+                {
+                    _logger.LogInformation("branch -- > Invalid BranchId\n");
                     serviceResponse.Message = MessaageType.NoRecordFound;
                     serviceResponse.Response = (int)ResponseType.NoConnect;
                     serviceResponse.Success = false;
@@ -121,35 +177,15 @@ namespace Eduzest.HRMS.Repository.Service
                 serviceResponse.Message = MessaageType.FailureOnException;
                 serviceResponse.Success = false;
                 serviceResponse.Response = (int)ResponseType.InternalServerError;
-                
+                _logger.LogError(string.Format("[Message  : {0}] \n [Stack Trace : {1}] \n [Target Site : {2}]", ex.Message, ex.StackTrace, ex.TargetSite));
             }
-            
-            return serviceResponse;
-        }
-
-        public async Task<ServiceResponse<BranchDto>> GetBranchById(Guid branchid)
-        {
-            ServiceResponse<BranchDto> serviceResponse = new ServiceResponse<BranchDto>();
-            var branch = await _dataContext.Branches.Where(x => x.BranchId == branchid && x.IsActive == true).FirstOrDefaultAsync();
-            if (branch != null)
-            {
-                serviceResponse.Data = _mapper.Map<BranchDto>(branch);
-                serviceResponse.Message = MessaageType.RecordFound;
-                serviceResponse.Response = (int)ResponseType.Ok;
-                serviceResponse.Success = true;
-
-            }
-            else
-            {
-                serviceResponse.Message = MessaageType.NoRecordFound;
-                serviceResponse.Response = (int)ResponseType.NoConnect;
-                serviceResponse.Success = false;
-            }
+            _logger.LogInformation("***** BranchRepository -- >GetBranchById() completed *****\n");
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<BranchDto>> UpdateBranch(Guid branchid, BranchDto branch)
         {
+            _logger.LogInformation("***** BranchRepository -- > UpdateBranch() started *****\n");
             ServiceResponse<BranchDto> serviceResponse = new ServiceResponse<BranchDto>();
             try
             {
@@ -157,6 +193,7 @@ namespace Eduzest.HRMS.Repository.Service
 
                 if (brachDetails != null)
                 {
+                    _logger.LogInformation("branch -- >initialization started\n");
                     brachDetails.BranchName = branch.BranchName;
                     brachDetails.Email = branch.Email;
                     brachDetails.MobileNumber = branch.MobileNumber;
@@ -171,9 +208,11 @@ namespace Eduzest.HRMS.Repository.Service
                     serviceResponse.Message = MessaageType.Updated;
                     serviceResponse.Success = true;
                     serviceResponse.Response = (int)ResponseType.Ok;
+                    _logger.LogInformation("branch -- >updated successfully\n");
                 }
                 else
                 {
+                    _logger.LogInformation("branch -- >invalid branchid\n");
                     serviceResponse.Message = MessaageType.FailureOnUpdate;
                     serviceResponse.Success = false;
                     serviceResponse.Response = (int)ResponseType.NoConnect;
@@ -184,8 +223,9 @@ namespace Eduzest.HRMS.Repository.Service
                 serviceResponse.Message = MessaageType.FailureOnException;
                 serviceResponse.Success = false;
                 serviceResponse.Response = (int)ResponseType.InternalServerError;
-               
+                _logger.LogError(string.Format("[Message  : {0}] \n [Stack Trace : {1}] \n [Target Site : {2}]", ex.Message, ex.StackTrace, ex.TargetSite));
             }
+            _logger.LogInformation("***** BranchRepository -- >UpdateBranch() completed ****\n");
             return serviceResponse;
         }
     }
