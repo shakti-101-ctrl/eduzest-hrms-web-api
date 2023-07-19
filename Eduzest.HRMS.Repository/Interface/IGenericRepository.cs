@@ -1,4 +1,6 @@
 ﻿using Eduzest.HRMS.Entities.Base;
+using Eduzest.HRMS.Repository.DTO.Employee;
+using Eduzest.HRMS.Repository.Service;
 using Eduzest.HRMS.Repository.Specification;
 using System;
 using System.Collections.Generic;
@@ -11,24 +13,10 @@ namespace Eduzest.HRMS.Repository.Interface
 {
     public interface IGenericRepository<T> where T : class
     {
-        Task<T> GetByIdAsync(Guid id);
-        Task<IReadOnlyList<T>> ListAllAsync();
-     
-        void Add(T enitity);
-        Task AddAsync(T enitity, string userId);
-        void Update(T entity);
-        Task UpdateAsync(T entity, string userId);
-        void Delete(T entity);
-        Task DeleteAsync(T entity, string userId);
-        void AddRange(IEnumerable<T> entity);
-        Task AddRangeAsync(IEnumerable<T> entities, string userId);
-        void UpdateRange(IEnumerable<T> entity);
-        void RemoveRange(IEnumerable<T> entity);
-        
-        Task<int> CountAsync(Expression<Func<T, bool>> predicate);
-        Task<IQueryable<T>> Query(Expression<Func<T, bool>> predicate);
-        Task<IList<T>> GetListItems(Expression<Func<T, bool>> predicate, params string[] navigationProperties);
-        Task<T> GetSingleItemsAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties);
-        T GetSingleItems(Expression<Func<T, bool>> predicate, params string[] navigationProperties);
+        Task<ServiceResponse<List<T>>> GetAll();
+        Task<ServiceResponse<T>> Add(T entity);
+        Task<ServiceResponse<T>> Update(Guid id, T entity);
+        Task<ServiceResponse<T>> Delete(Guid id,T entity);
+        Task<ServiceResponse<T>> GetItemById(Guid id);
     }
 }

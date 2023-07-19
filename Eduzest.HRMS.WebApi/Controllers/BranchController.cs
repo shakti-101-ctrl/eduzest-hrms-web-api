@@ -1,9 +1,13 @@
-﻿using Eduzest.HRMS.Repository.DTO.Employee;
+﻿using AutoMapper;
+using Eduzest.HRMS.DataAccess;
+using Eduzest.HRMS.Entities.Entities.Employee;
+using Eduzest.HRMS.Repository.DTO.Employee;
 using Eduzest.HRMS.Repository.Interface;
 using Eduzest.HRMS.Repository.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 namespace Eduzest.HRMS.WebApi.Controllers
 {
@@ -13,119 +17,95 @@ namespace Eduzest.HRMS.WebApi.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<BranchController> _logger;
-        private string Controllername = "BranchController";
         private string ActionMethodName  = string.Empty;
         private string ControllerName = string.Empty;
-        
-        public BranchController(IUnitOfWork unitOfWork, ILogger<BranchController> logger)
+        private readonly IMapper _mapper;
+        private readonly DataContext _dataContext;
+        public BranchController(DataContext datacontext,IUnitOfWork unitOfWork,IMapper mapper, ILogger<BranchController> logger)
         {
             this._unitOfWork = unitOfWork;
             _logger = logger;
+            _mapper = mapper;
+            _dataContext = datacontext;
            
            
         }
         [HttpGet("getbranches")]
         public async Task<IActionResult> GetBranches()
         {
-            try
-            {
-                _logger.LogInformation(string.Format("\n\t[Action method : {0},Status : Started,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
-                var result = await _unitOfWork.Branches.GetAllBranches();
-                _unitOfWork.Dispose();
-                _logger.LogInformation(string.Format("\n\t[Action method : {0},Status : Completed,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName)); 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogInformation("Exception: ");
-                _logger.LogError(string.Format("Error Details : \n[Action: {0},Contoller : {1}]  \n [Message  : {2}] \n [Stack Trace : {3}] \n [Target Site : {4}]", ActionMethodName,ControllerName,ex.Message,ex.StackTrace,ex.TargetSite));
-                return BadRequest(ex.Message);
-            }
+            var result = await _unitOfWork.Branches.GetAll();
+            return Ok(result);
+            
         }
 
         [HttpGet("getbranchbyid")]
         public async Task<IActionResult> GetBranchById(Guid branchid)
         {
-            try
+            var result = await _unitOfWork.Branches.GetItemById(branchid);
+            if(result != null) 
             {
-                _logger.LogInformation(string.Format("\n\t[Action method : {0},Status : Started,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
-                var result = await _unitOfWork.Branches.GetBranchById(branchid);
-                _unitOfWork.Dispose();
-                _logger.LogInformation(string.Format("\n\t[Action method : {0},Status : Completed,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
                 return Ok(result);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogInformation("Exception: ");
-                _logger.LogError(string.Format("Error Details : \n[Action: {0},Contoller : {1}]  \n [Message  : {2}] \n [Stack Trace : {3}] \n [Target Site : {4}]", ActionMethodName, ControllerName, ex.Message, ex.StackTrace, ex.TargetSite));
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
+
         }
         [HttpPost("postbranch")]
         public async Task<IActionResult> PostBranch(BranchDto branchDto)
         {
-            try
-            {
-                
-                _logger.LogInformation(string.Format("\n[Action method : {0},Status : Started,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
-                if (!ModelState.IsValid)
-                {
-                    _logger.LogError("Error in model validations");
-                    return UnprocessableEntity(ModelState);
-                }
-                var result = await _unitOfWork.Branches.AddBranch(branchDto);
-                _logger.LogInformation(string.Format("\n[Action method : {0},Status : Completed,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
-                _unitOfWork.Dispose();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogInformation("Exception: ");
-                _logger.LogError(string.Format("Error Details : \n[Action: {0},Contoller : {1}]  \n [Message  : {2}] \n [Stack Trace : {3}] \n [Target Site : {4}]", ActionMethodName, ControllerName, ex.Message, ex.StackTrace, ex.TargetSite));
+            branchDto.BranchId = Guid.NewGuid();
+            branchDto.CreatedOn = DateTime.Now;
 
-                return BadRequest(ex.Message);
-            }     
+            var result = await _unitOfWork.Branches.Add(_mapper.Map<Branch>(branchDto));
+            _unitOfWork.Complete();
+            _unitOfWork.Dispose();
+            return Ok(result);
+           
         }
         [HttpPut("putbranch")]
-        public async Task<IActionResult> PutBranch(Guid branchid,BranchDto branchDto)
+        public async Task<IActionResult> PutBranch(Guid branchid, BranchDto branchDto)
         {
-            try
+            var branchDetails = await _dataContext.Branches.Where(branch=>branch.BranchId==branchid).FirstOrDefaultAsync();
+            if(branchDetails!=null)
             {
-                _logger.LogInformation(string.Format("\n[Action method : {0},Status : Started,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
-                if (!ModelState.IsValid)
-                {
-                    _logger.LogError("Error in model validations");
-                    return UnprocessableEntity(ModelState);
-                }
-                var result = await _unitOfWork.Branches.UpdateBranch(branchid,branchDto);
-                _logger.LogInformation(string.Format("\n\t[Action method : {0},Status : Completed,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
+                branchDetails.BranchName = branchDto.BranchName;
+                branchDetails.Email = branchDto.Email;
+                branchDetails.MobileNumber = branchDto.MobileNumber;
+                branchDetails.City = branchDto.City;
+                branchDetails.State = branchDto.State;
+                branchDetails.Address = branchDto.Address;
+                branchDetails.UpdatedOn = branchDto.UpdatedOn;
+                branchDetails.UpdatedBy = branchDto.UpdatedBy;
+                branchDetails.UpdatedOn=DateTime.Now;   
+                var resullt = await _unitOfWork.Branches.Update(branchid,_mapper.Map<Branch>(branchDetails));
+                _unitOfWork.Complete();
                 _unitOfWork.Dispose();
-                return Ok(result);
+                return Ok(resullt);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogInformation("Exception: ");
-                _logger.LogError(string.Format("Error Details : \n[Action: {0},Contoller : {1}]  \n [Message  : {2}] \n [Stack Trace : {3}] \n [Target Site : {4}]", ActionMethodName, ControllerName, ex.Message, ex.StackTrace, ex.TargetSite));
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
         }
         [HttpDelete("deletebranch")]
         public async Task<IActionResult> DeleteBranch(Guid branchid)
         {
-            try
+            var branch =await _dataContext.Branches.Where(x=>x.BranchId == branchid).FirstOrDefaultAsync();
+            if(branch!=null)
             {
-                _logger.LogInformation(string.Format("\n[Action method : {0},Status : Started,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
-                var result = await _unitOfWork.Branches.DeleteBranch(branchid);
-                _logger.LogInformation(string.Format("\n[Action method : {0},Status : Completed,Controller : {1}]", ControllerContext.ActionDescriptor.ActionName, ControllerContext.ActionDescriptor.ControllerName));
+                branch.IsActive = false;
+                var result=await _unitOfWork.Branches.Delete(branchid,branch);
+                _unitOfWork.Complete();
                 _unitOfWork.Dispose();
                 return Ok(result);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogInformation("Exception: ");
-                _logger.LogError(string.Format("Error Details : \n[Action: {0},Contoller : {1}]  \n [Message  : {2}] \n [Stack Trace : {3}] \n [Target Site : {4}]", ActionMethodName, ControllerName, ex.Message, ex.StackTrace, ex.TargetSite));
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
+
         }
 
     }

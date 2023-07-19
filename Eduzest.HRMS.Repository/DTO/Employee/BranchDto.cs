@@ -10,7 +10,7 @@ using Eduzest.HRMS.Repository.CommonUses;
 
 namespace Eduzest.HRMS.Repository.DTO.Employee
 {
-    public class BranchDto : CommonProperties
+    public class BranchDto : BaseEntity
     {
         public Guid? BranchId { get; set; }
         

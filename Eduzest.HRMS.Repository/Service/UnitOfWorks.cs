@@ -24,18 +24,19 @@ namespace Eduzest.HRMS.Repository.Service
             this.mapper = _mapper;
             logger = _logger;
             
-            Branches = new BranchRepository(_context,_mapper,_logger);
+            Branches = new BranchRepository(context,mapper,logger);
            
         }
         public IBranchRepository Branches { get; private set; }
         
-        public int Complete()
-        {
-            return context.SaveChanges();
-        }
         public void Dispose()
         {
             context.Dispose();
+        }
+
+        public void Complete()
+        {
+            context.SaveChanges();
         }
     }
 }

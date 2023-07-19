@@ -9,12 +9,8 @@ using System.Threading.Tasks;
 
 namespace Eduzest.HRMS.Repository.Interface
 {
-    public interface IBranchRepository
+    public interface IBranchRepository : IGenericRepository<Branch>
     {
-        Task<ServiceResponse<List<BranchDto>>> GetAllBranches();
-        Task<ServiceResponse<BranchDto>> AddBranch(BranchDto employee);
-        Task<ServiceResponse<BranchDto>> UpdateBranch(Guid employeeId, BranchDto employee);
-        Task<ServiceResponse<BranchDto>> DeleteBranch(Guid branchid);
-        Task<ServiceResponse<BranchDto>> GetBranchById(Guid branchid);
+        //add any other methods if it requires othere than generic methods.
     }
 }

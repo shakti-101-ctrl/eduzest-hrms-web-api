@@ -1,127 +1,89 @@
-﻿using Eduzest.HRMS.DataAccess;
+﻿using AutoMapper;
+using Eduzest.HRMS.DataAccess;
 using Eduzest.HRMS.Entities.Base;
+using Eduzest.HRMS.Entities.Entities.Employee;
+using Eduzest.HRMS.Repository.DTO.Employee;
 using Eduzest.HRMS.Repository.Interface;
 using Eduzest.HRMS.Repository.Specification;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Eduzest.HRMS.Repository.Service
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
+    public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly DataContext _context;
-        public GenericRepository(DataContext context)
+        private readonly DataContext _dataContext;
+        private readonly IMapper _mapper;
+        
+        public GenericRepository(DataContext context,IMapper mapper)
         {
-            _context = context;
+            _dataContext= context;
+            _mapper = mapper;
+                  
+        }
+        public async Task<ServiceResponse<T>> Add(T entity)
+        {
+            ServiceResponse<T> serviceResponse = new ServiceResponse<T>();
+            await _dataContext.Set<T>().AddAsync(_mapper.Map<T>(entity));
+            serviceResponse.Data = entity;
+            serviceResponse.Success = true;
+            serviceResponse.Response = (int)ResponseType.Ok;
+            serviceResponse.Message = MessaageType.Saved;
+            return serviceResponse;
 
         }
-        public async Task<T> GetByIdAsync(Guid id)
+        public async Task<ServiceResponse<T>> Delete(Guid id, T entity)
         {
-            return await _context.Set<T>().FindAsync(id);
+            ServiceResponse<T> serviceResponse = new ServiceResponse<T>();
+            _dataContext.Set<T>().Attach(entity);
+            _dataContext.Entry(entity).State = EntityState.Modified;
+            serviceResponse.Data = _mapper.Map<T>(entity);
+            serviceResponse.Message = MessaageType.Deleted;
+            serviceResponse.Response = (int)ResponseType.Ok;
+            serviceResponse.Success = true;
+            return serviceResponse;
         }
-        public async Task<IReadOnlyList<T>> ListAllAsync()
-        {
-            return await _context.Set<T>().AsNoTracking().ToListAsync();
-        }
-        
-       
-        public void Add(T enitity)
-        {
-            _context.Set<T>().Add(enitity);
-            // _context.SaveChanges();
-        }
-        public void Update(T entity)
-        {
-            _context.Set<T>().Attach(entity);
-            _context.Entry(entity).State = EntityState.Modified;
-            // _context.SaveChanges();
 
-        }
-        public void Delete(T entity)
+        public async Task<ServiceResponse<List<T>>> GetAll()
         {
-            _context.Set<T>().Remove(entity);
-            // _context.SaveChanges();
+            ServiceResponse<List<T>> serviceResponse = new ServiceResponse<List<T>>();
+            var entities = _dataContext.Set<T>().AsNoTracking();
+            serviceResponse.Data = _mapper.Map<List<T>>(entities);
+            serviceResponse.Message = MessaageType.RecordFound;
+            serviceResponse.Response = (int)ResponseType.Ok;
+            serviceResponse.Success = true;
+            return serviceResponse;
         }
-        public async Task AddAsync(T entity, string userId)
+        public async Task<ServiceResponse<T>> GetItemById(Guid id)
         {
-            await _context.Set<T>().AddAsync(entity);
-            _context.Entry(entity).State = EntityState.Added;
-            await _context.SaveChangesAsync();
+            ServiceResponse<T> serviceResponse = new ServiceResponse<T>();
+            T? entity =await _dataContext.Set<T>().FindAsync(id);
+            serviceResponse.Data = _mapper.Map<T>(entity);
+            serviceResponse.Message = MessaageType.RecordFound;
+            serviceResponse.Response = (int)ResponseType.Ok;
+            serviceResponse.Success = true;
+            return serviceResponse;
         }
-        public async Task UpdateAsync(T entity, string userId)
+
+        public async Task<ServiceResponse<T>> Update(Guid id, T entity)
         {
-            _context.Set<T>().Attach(entity);
-            _context.Entry(entity).State = EntityState.Modified;
-            //    await _context.SaveChangesAsync(userId);
+            ServiceResponse<T> serviceResponse = new ServiceResponse<T>();
+            _dataContext.Set<T>().Attach(entity);
+            _dataContext.Entry(entity).State = EntityState.Modified;
+            serviceResponse.Data = _mapper.Map<T>(entity);
+            serviceResponse.Message = MessaageType.Updated;
+            serviceResponse.Response = (int)ResponseType.Ok;
+            serviceResponse.Success = true;
+            return serviceResponse;
         }
-        public async Task DeleteAsync(T entity, string userId)
-        {
-            _context.Set<T>().Remove(entity);
-            _context.Entry(entity).State = EntityState.Deleted;
-            //    await _context.SaveChangesAsync(userId);
-        }
-       
-        public void AddRange(IEnumerable<T> entity)
-        {
-            _context.Set<T>().AddRange(entity);
-        }
-        public async Task AddRangeAsync(IEnumerable<T> entities, string userId)
-        {
-            _context.Set<T>().AddRange(entities);
-            _context.Entry(entities).State = EntityState.Added;
-            await _context.AddRangeAsync(userId);
-        }
-        public void UpdateRange(IEnumerable<T> entity)
-        {
-            _context.Set<T>().UpdateRange(entity);
-        }
-        public void RemoveRange(IEnumerable<T> entity)
-        {
-            _context.Set<T>().RemoveRange(entity);
-        }
-        
-       
-        public async Task<int> CountAsync(Expression<Func<T, bool>> predicate)
-        {
-            return await _context.Set<T>().Where(predicate).CountAsync();
-        }
-        
-        public async Task<IQueryable<T>> Query(Expression<Func<T, bool>> predicate)
-        {
-            return _context.Set<T>().Where(predicate);
-        }
-        public async Task<IList<T>> GetListItems(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
-        {
-            List<T> list;
-            // using (var ctx = new _context())
-            // {
-            var query = _context.Set<T>().AsQueryable();
-            foreach (string navigationProperty in navigationProperties)
-                query = query.Include(navigationProperty);//got to reaffect it.
-            list = query.Where(predicate).ToList<T>();
-            //}
-            return list;
-        }
-        public async Task<T> GetSingleItemsAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
-        {
-            var query = _context.Set<T>().AsQueryable();
-            foreach (string navigationProperty in navigationProperties)
-                query = query.Include(navigationProperty);//got to reaffect it.
-            return await query.FirstOrDefaultAsync(predicate);
-        }
-        public T GetSingleItems(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
-        {
-            var query = _context.Set<T>().AsQueryable();
-            foreach (string navigationProperty in navigationProperties)
-                query = query.Include(navigationProperty);//got to reaffect it.
-            return query.FirstOrDefault(predicate);
-        }
-       
     }
 }
 
