@@ -15,7 +15,7 @@ namespace Eduzest.HRMS.Repository.Interface
     {
         Task<ServiceResponse<List<T>>> GetAll();
         Task<ServiceResponse<T>> Add(T entity);
-        Task<ServiceResponse<T>> Update(Guid id, T entity);
+        Task<ServiceResponse<T>> Update(T entity);
         Task<ServiceResponse<T>> Delete(Guid id,T entity);
         Task<ServiceResponse<T>> GetItemById(Guid id);
     }

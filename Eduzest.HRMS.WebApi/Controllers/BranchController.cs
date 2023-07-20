@@ -4,6 +4,7 @@ using Eduzest.HRMS.Entities.Entities.Employee;
 using Eduzest.HRMS.Repository.DTO.Employee;
 using Eduzest.HRMS.Repository.Interface;
 using Eduzest.HRMS.Repository.Service;
+using Eduzest.HRMS.WebApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -27,15 +28,19 @@ namespace Eduzest.HRMS.WebApi.Controllers
             _logger = logger;
             _mapper = mapper;
             _dataContext = datacontext;
-           
-           
         }
         [HttpGet("getbranches")]
         public async Task<IActionResult> GetBranches()
         {
-            var result = await _unitOfWork.Branches.GetAll();
-            return Ok(result);
-            
+            try
+            {
+                return Ok(await _unitOfWork.Branches.GetAll());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ServiceResponse<Branch>() { Message = MsgType.FailureOnException, Response = (int)ResType.InternalServerError });
+            }         
+
         }
 
         [HttpGet("getbranchbyid")]
@@ -50,60 +55,96 @@ namespace Eduzest.HRMS.WebApi.Controllers
             {
                 return BadRequest();
             }
-
         }
         [HttpPost("postbranch")]
         public async Task<IActionResult> PostBranch(BranchDto branchDto)
         {
-            branchDto.BranchId = Guid.NewGuid();
-            branchDto.CreatedOn = DateTime.Now;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    branchDto.BranchId = Guid.NewGuid();
+                    //branchDto.CreatedOn = DateTime.Now;
+                    var result = await _unitOfWork.Branches.Add(_mapper.Map<Branch>(branchDto));
+                    _unitOfWork.Complete();
+                    _unitOfWork.Dispose();
+                    return Ok(result);
+                }
+                else
+                {
+                    return Ok(new ServiceResponse<Branch>() { Message = MsgType.FailureOnException, Response = (int)ResType.InternalServerError, Success = false });
+                   
+                }
 
-            var result = await _unitOfWork.Branches.Add(_mapper.Map<Branch>(branchDto));
-            _unitOfWork.Complete();
-            _unitOfWork.Dispose();
-            return Ok(result);
-           
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new ServiceResponse<Branch>() { Message = MsgType.FailureOnException, Response = (int)ResType.InternalServerError });
+            }
+               
         }
         [HttpPut("putbranch")]
-        public async Task<IActionResult> PutBranch(Guid branchid, BranchDto branchDto)
+        public async Task<IActionResult> PutBranch(BranchDto branchDto)
         {
-            var branchDetails = await _dataContext.Branches.Where(branch=>branch.BranchId==branchid).FirstOrDefaultAsync();
-            if(branchDetails!=null)
+            try
             {
-                branchDetails.BranchName = branchDto.BranchName;
-                branchDetails.Email = branchDto.Email;
-                branchDetails.MobileNumber = branchDto.MobileNumber;
-                branchDetails.City = branchDto.City;
-                branchDetails.State = branchDto.State;
-                branchDetails.Address = branchDto.Address;
-                branchDetails.UpdatedOn = branchDto.UpdatedOn;
-                branchDetails.UpdatedBy = branchDto.UpdatedBy;
-                branchDetails.UpdatedOn=DateTime.Now;   
-                var resullt = await _unitOfWork.Branches.Update(branchid,_mapper.Map<Branch>(branchDetails));
-                _unitOfWork.Complete();
-                _unitOfWork.Dispose();
-                return Ok(resullt);
+                if (ModelState.IsValid)
+                {
+                    var branchDetails = await _dataContext.Branches.Where(branch => branch.BranchId == branchDto.BranchId).FirstOrDefaultAsync();
+                    if(branchDetails!=null)
+                    {
+                        branchDetails.BranchName = branchDto.BranchName;
+                        branchDetails.Email = branchDto.Email;
+                        branchDetails.MobileNumber = branchDto.MobileNumber;
+                        branchDetails.City = branchDto.City;
+                        branchDetails.State = branchDto.State;
+                        branchDetails.Address = branchDto.Address;
+                        branchDetails.UpdatedBy = branchDto.UpdatedBy;
+                        branchDetails.UpdatedOn = DateTime.Now;
+                        var resullt = await _unitOfWork.Branches.Update(_mapper.Map<Branch>(branchDetails));
+                        _unitOfWork.Complete();
+                        _unitOfWork.Dispose();
+                        return Ok(resullt);
+                    }
+                    else
+                    {
+                        return BadRequest(new ServiceResponse<Branch>() { Message = MsgType.FailureOnException, Response = (int)ResType.InternalServerError });
+                    }
+                   
+                }
+                else
+                {
+                    return BadRequest(new ServiceResponse<Branch>() { Message = MsgType.FailureOnException, Response = (int)ResType.InternalServerError });
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest();
-            }
+                return BadRequest(new ServiceResponse<Branch>() { Message = MsgType.FailureOnException, Response = (int)ResType.InternalServerError });
+            }    
         }
-        [HttpDelete("deletebranch")]
-        public async Task<IActionResult> DeleteBranch(Guid branchid)
+        [HttpDelete("deletebranch/{id}")]
+        public async Task<IActionResult> DeleteBranch(Guid id)
         {
-            var branch =await _dataContext.Branches.Where(x=>x.BranchId == branchid).FirstOrDefaultAsync();
-            if(branch!=null)
+            try
             {
-                branch.IsActive = false;
-                var result=await _unitOfWork.Branches.Delete(branchid,branch);
-                _unitOfWork.Complete();
-                _unitOfWork.Dispose();
-                return Ok(result);
+                var branch = await _dataContext.Branches.Where(x => x.BranchId == id).FirstOrDefaultAsync();
+                if (branch != null)
+                {
+                    branch.IsActive = false;
+                    var result = await _unitOfWork.Branches.Delete(id, branch);
+                    _unitOfWork.Complete();
+                    _unitOfWork.Dispose();
+                    return Ok(result);
+                }
+                else
+                {
+                    return BadRequest(new ExceptionResponse() { Message = MsgType.FailureOnException, Response = (int)ResType.InternalServerError });
+                }
             }
-            else
+            catch(Exception ex)
             {
-                return BadRequest();
+                return BadRequest(new ExceptionResponse() { Message = MsgType.FailureOnException, Response = (int)ResType.InternalServerError });
             }
 
         }

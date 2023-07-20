@@ -18,13 +18,13 @@ namespace Eduzest.HRMS.Entities.Base
         [JsonIgnore]
 
         [Column("createdon"), DataType(DataType.Date), Required]
-        public DateTime CreatedOn { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         [Column("updatedby")]
-        public string UpdatedBy { get; set; }
+        public string UpdatedBy { get; set; } = "admin";
 
         [Column("createdby"), Required, StringLength(100)]
-        public string CreatedBy { get; set; }
+        public string CreatedBy { get; set; } = "admin";
 
         [Column("updatedon")]
         public DateTime? UpdatedOn { get; set; }

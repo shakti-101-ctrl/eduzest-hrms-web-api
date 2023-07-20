@@ -8,9 +8,9 @@ namespace Eduzest.HRMS.Repository.Service
 {
     public class ServiceResponse<T>
     {
-        public T Data { get; set; }
+        public T? Data { get; set; }
         public bool Success { get; set; } = false;
-        public string Message { get; set; } = null;
+        public string? Message { get; set; } = null;
         public int? Response { get; set; }
     }
     public enum ResponseType
